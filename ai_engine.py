@@ -70,6 +70,7 @@ def ask_ollama(prompt, timeout=120):
 
 
 
+
 def interpret_question(question):
     prompt = f"""
 Convert the user's question into a JSON analysis plan.
@@ -79,17 +80,6 @@ dimension, metric, operation, limit.
 Allowed dimensions: overall, category, region, month, product, status
 Allowed metrics: sales, quantity, orders
 Allowed operations: total, highest, lowest, top, compare, summary
-
-The dimension must be the data group being analyzed,
-such as category, region, month, product, or status.
-
-The operation must describe what to do,
-such as total, highest, lowest, top, compare, or summary.
-
-Example:
-Question: Compare sales across all categories.
-JSON:
-{{"dimension":"category","metric":"sales","operation":"compare","limit":5}}
 
 Rules:
 - best, highest, most, maximum -> highest
@@ -106,6 +96,9 @@ Rules:
 - Otherwise, use overall.
 
 Examples:
+Question: Compare sales across all categories.
+{{"dimension":"category","metric":"sales","operation":"compare","limit":5}}
+
 Question: Which is the best-performing sales category?
 {{"dimension":"category","metric":"sales","operation":"highest","limit":1}}
 
@@ -121,15 +114,16 @@ Question: How many orders are there?
 User question: {question}
 """
 
-  plan_text = ask_ollama(prompt).strip()
+    plan_text = ask_ollama(prompt).strip()
 
-if not plan_text:
-    raise ValueError("AI returned an empty response.")
+    if not plan_text:
+        raise ValueError("AI returned an empty response.")
+
     try:
         plan = json.loads(plan_text)
     except json.JSONDecodeError:
         raise ValueError(
-            f"Ollama returned invalid JSON: {plan_text!r}"
+            f"AI returned invalid JSON: {plan_text!r}"
         )
 
     allowed = {
@@ -144,9 +138,6 @@ if not plan_text:
         ]
     }
 
-    
-    # Fix the known category comparison question
-    
     # Correct dimension and operation mix-ups
     if plan.get("dimension") in allowed["operation"]:
         mistaken_operation = plan["dimension"]
@@ -166,11 +157,6 @@ if not plan_text:
 
         plan["operation"] = mistaken_operation
 
-    # Validate the plan returned by the model
-
-# Normalize common operation names returned by Ollama
-
-    # Normalize common operation names returned by Ollama
     operation_aliases = {
         "best": "highest",
         "most": "highest",
@@ -184,26 +170,22 @@ if not plan_text:
         "comparison": "compare",
     }
 
-    # Fix an operation mistakenly returned as the metric
+    # Correct an operation mistakenly returned as the metric
     metric_value = str(plan.get("metric", "")).strip().lower()
 
     if metric_value in operation_aliases:
         plan["metric"] = "sales"
         plan["operation"] = operation_aliases[metric_value]
 
-    # Normalize the operation field
     operation = str(plan.get("operation", "")).strip().lower()
     plan["operation"] = operation_aliases.get(operation, operation)
 
-    # Validate the plan returned by the model
     for field, choices in allowed.items():
         if plan.get(field) not in choices:
             raise ValueError(
                 f"Invalid analysis plan: {field}. "
                 f"Received: {plan.get(field)!r}"
             )
-
-   
 
     try:
         limit = int(plan.get("limit", 1))
@@ -213,6 +195,7 @@ if not plan_text:
     plan["limit"] = max(1, min(limit, 5))
 
     return plan
+
 
 
 def execute_analysis(plan):
