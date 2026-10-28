@@ -14,71 +14,47 @@ df = pd.read_excel(
 
 
 
+
 def ask_ollama(prompt, timeout=120):
-    """Use Groq in the cloud and Ollama locally."""
+    """Use Groq in the cloud."""
     api_key = st.secrets.get("GROQ_API_KEY")
 
-if not api_key:
-    raise RuntimeError(
-        "GROQ_API_KEY is missing from Streamlit Cloud Secrets."
-    )
-
-    if api_key:
-        payload = {
-            "model": "llama-3.1-8b-instant",
-            "messages": [
-                {"role": "user", "content": prompt}
-            ],
-            "temperature": 0.2
-        }
-
-        request = urllib.request.Request(
-            "https://api.groq.com/openai/v1/chat/completions",
-            data=json.dumps(payload).encode("utf-8"),
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {api_key}"
-            },
-            method="POST"
+    if not api_key:
+        raise RuntimeError(
+            "GROQ_API_KEY is missing from Streamlit Cloud Secrets."
         )
 
-        
-        try:
-            with urllib.request.urlopen(
-                request, timeout=timeout
-            ) as response:
-                data = json.loads(response.read().decode("utf-8"))
-
-        except urllib.error.HTTPError as e:
-            error_body = e.read().decode("utf-8", errors="replace")
-            raise RuntimeError(
-                f"Groq API error {e.code}: {error_body}"
-            ) from e
-
-            data = json.loads(response.read().decode("utf-8"))
-
-        return data["choices"][0]["message"]["content"]
-
-    # Fall back to local Ollama
     payload = {
-        "model": "llama3.2:1b",
-        "prompt": prompt,
-        "stream": False
+        "model": "llama-3.1-8b-instant",
+        "messages": [
+            {"role": "user", "content": prompt}
+        ],
+        "temperature": 0.2
     }
 
     request = urllib.request.Request(
-        "http://localhost:11434/api/generate",
+        "https://api.groq.com/openai/v1/chat/completions",
         data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}"
+        },
         method="POST"
     )
 
-    with urllib.request.urlopen(
-        request, timeout=timeout
-    ) as response:
-        data = json.loads(response.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(
+            request, timeout=timeout
+        ) as response:
+            data = json.loads(response.read().decode("utf-8"))
 
-    return data["response"]
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode("utf-8", errors="replace")
+        raise RuntimeError(
+            f"Groq API error {e.code}: {error_body}"
+        ) from e
+
+    return data["choices"][0]["message"]["content"]
 
 
 
