@@ -12,8 +12,41 @@ df = pd.read_excel(
 )
 
 
+
 def ask_ollama(prompt, timeout=120):
-    """Send a prompt to the local Ollama model."""
+    """Use Groq in the cloud and Ollama locally."""
+    try:
+        api_key = st.secrets.get("GROQ_API_KEY")
+    except Exception:
+        api_key = None
+
+    if api_key:
+        payload = {
+            "model": "llama-3.1-8b-instant",
+            "messages": [
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.2
+        }
+
+        request = urllib.request.Request(
+            "https://api.groq.com/openai/v1/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {api_key}"
+            },
+            method="POST"
+        )
+
+        with urllib.request.urlopen(
+            request, timeout=timeout
+        ) as response:
+            data = json.loads(response.read().decode("utf-8"))
+
+        return data["choices"][0]["message"]["content"]
+
+    # Fall back to local Ollama
     payload = {
         "model": "llama3.2:1b",
         "prompt": prompt,
@@ -27,10 +60,13 @@ def ask_ollama(prompt, timeout=120):
         method="POST"
     )
 
-    with urllib.request.urlopen(request, timeout=timeout) as response:
+    with urllib.request.urlopen(
+        request, timeout=timeout
+    ) as response:
         data = json.loads(response.read().decode("utf-8"))
 
     return data["response"]
+
 
 
 
