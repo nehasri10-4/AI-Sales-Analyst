@@ -1,7 +1,19 @@
 # AI Sales Analyst 📊
 
 An interactive sales analytics dashboard that combines data analysis, business insights, and a locally running AI assistant to help users understand e-commerce sales data.
+## 📸 Project Screenshots
 
+### Main Dashboard
+![Sales Dashboard](screenshots/KPI-dashboard.png)
+
+### AI Analysis
+![AI Business Insights](screenshots/ai-analysis.png)
+
+### Order Analysis
+![Order Analysis](screenshots/Orders.png)
+
+### Sales Analysis
+![Sales Analysis](screenshots/Sales.png)
 ## 🚀 Features
 
 - **Interactive Sales Dashboard** — View sales KPIs, charts, and sales performance.
