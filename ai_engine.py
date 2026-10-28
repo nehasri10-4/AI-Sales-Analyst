@@ -1,6 +1,7 @@
 
 import pandas as pd
 import json
+import urllib.error
 import urllib.request
 
 # Load dataset once
@@ -39,9 +40,19 @@ def ask_ollama(prompt, timeout=120):
             method="POST"
         )
 
-        with urllib.request.urlopen(
-            request, timeout=timeout
-        ) as response:
+        
+        try:
+            with urllib.request.urlopen(
+                request, timeout=timeout
+            ) as response:
+                data = json.loads(response.read().decode("utf-8"))
+
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode("utf-8", errors="replace")
+            raise RuntimeError(
+                f"Groq API error {e.code}: {error_body}"
+            ) from e
+
             data = json.loads(response.read().decode("utf-8"))
 
         return data["choices"][0]["message"]["content"]
