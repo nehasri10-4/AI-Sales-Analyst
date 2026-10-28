@@ -16,10 +16,12 @@ df = pd.read_excel(
 
 def ask_ollama(prompt, timeout=120):
     """Use Groq in the cloud and Ollama locally."""
-    try:
-        api_key = st.secrets.get("GROQ_API_KEY")
-    except Exception:
-        api_key = None
+    api_key = st.secrets.get("GROQ_API_KEY")
+
+if not api_key:
+    raise RuntimeError(
+        "GROQ_API_KEY is missing from Streamlit Cloud Secrets."
+    )
 
     if api_key:
         payload = {
