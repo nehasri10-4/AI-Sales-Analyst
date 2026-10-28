@@ -36,8 +36,9 @@ def ask_ollama(prompt, timeout=120):
         "https://api.groq.com/openai/v1/chat/completions",
         data=json.dumps(payload).encode("utf-8"),
         headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}"
+            Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}",
+            "User-Agent": "AI-Sales-Analyst/1.0"
         },
         method="POST"
     )
