@@ -121,29 +121,10 @@ Question: How many orders are there?
 User question: {question}
 """
 
-    payload = {
-        "model": "llama3.2:1b",
-        "prompt": prompt,
-        "format": "json",
-        "stream": False
-    }
+  plan_text = ask_ollama(prompt).strip()
 
-    request = urllib.request.Request(
-        "http://localhost:11434/api/generate",
-        data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-        method="POST"
-    )
-
-    with urllib.request.urlopen(request, timeout=120) as http_response:
-        response_text = http_response.read().decode("utf-8")
-
-    data = json.loads(response_text)
-    plan_text = data.get("response", "").strip()
-
-    if not plan_text:
-        raise ValueError("Ollama returned an empty response.")
-
+if not plan_text:
+    raise ValueError("AI returned an empty response.")
     try:
         plan = json.loads(plan_text)
     except json.JSONDecodeError:
