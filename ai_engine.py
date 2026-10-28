@@ -15,8 +15,9 @@ df = pd.read_excel(
 
 
 
+
 def ask_ollama(prompt, timeout=120):
-    """Use Groq in the cloud."""
+    """Send prompts to Groq for the deployed app."""
     api_key = st.secrets.get("GROQ_API_KEY")
 
     if not api_key:
@@ -36,7 +37,7 @@ def ask_ollama(prompt, timeout=120):
         "https://api.groq.com/openai/v1/chat/completions",
         data=json.dumps(payload).encode("utf-8"),
         headers={
-            Content-Type": "application/json",
+            "Content-Type": "application/json",
             "Authorization": f"Bearer {api_key}",
             "User-Agent": "AI-Sales-Analyst/1.0"
         },
@@ -56,7 +57,6 @@ def ask_ollama(prompt, timeout=120):
         ) from e
 
     return data["choices"][0]["message"]["content"]
-
 
 
 
